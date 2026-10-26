@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
+
+    <card>
+        <title lang="de-DE">Sub-Module aktivieren</title>
+        <title lang="en-GB">Activate sub-modules</title>
+
+        <input-field type="bool">
+            <name>garbageCollectorActive</name>
+            <label lang="de-DE">Garbage-Collector aktivieren</label>
+            <label lang="en-GB">Activate garbage collector</label>
+            <helpText lang="de-DE">Findet verwaiste Medien und verschiebt sie nach Bestätigung in eine Quarantäne.</helpText>
+            <helpText lang="en-GB">Identifies orphaned media and moves them to quarantine after confirmation.</helpText>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>healthCheckActive</name>
+            <label lang="de-DE">Health-Check aktivieren</label>
+            <label lang="en-GB">Activate health check</label>
+            <helpText lang="de-DE">Prüft Konsistenz zwischen Media-Datenbank und Filesystem. Read-only, niemals automatische Reparatur.</helpText>
+            <helpText lang="en-GB">Verifies consistency between media database and filesystem. Read-only, no automatic repair.</helpText>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>webPOptimizerActive</name>
+            <label lang="de-DE">WebP-Optimizer aktivieren</label>
+            <label lang="en-GB">Activate WebP optimizer</label>
+            <helpText lang="de-DE">Konvertiert JPEG/PNG zusätzlich nach WebP. Originale bleiben unverändert.</helpText>
+            <helpText lang="en-GB">Converts JPEG/PNG to additional WebP variants. Originals stay untouched.</helpText>
+            <defaultValue>false</defaultValue>
+        </input-field>
+    </card>
+
+    <card>
+        <title lang="de-DE">Garbage-Collector – Einstellungen</title>
+        <title lang="en-GB">Garbage collector – settings</title>
+
+        <input-field type="int">
+            <name>gcGracePeriodDays</name>
+            <label lang="de-DE">Grace-Period in Tagen</label>
+            <label lang="en-GB">Grace period in days</label>
+            <helpText lang="de-DE">Verwaiste Medien werden erst nach dieser Frist als Quarantäne-Kandidat angezeigt.</helpText>
+            <helpText lang="en-GB">Orphaned media are only considered candidates after this grace period.</helpText>
+            <defaultValue>30</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>gcQuarantineRetentionDays</name>
+            <label lang="de-DE">Quarantäne-Retention in Tagen</label>
+            <label lang="en-GB">Quarantine retention in days</label>
+            <helpText lang="de-DE">Wie lange Medien in der Quarantäne bleiben, bevor sie endgültig löschbar werden.</helpText>
+            <helpText lang="en-GB">How long media stays in quarantine before being eligible for purge.</helpText>
+            <defaultValue>14</defaultValue>
+        </input-field>
+
+        <input-field type="textarea">
+            <name>gcExclusionPatterns</name>
+            <label lang="de-DE">Ausschluss-Patterns (Regex pro Zeile)</label>
+            <label lang="en-GB">Exclusion patterns (one regex per line)</label>
+            <helpText lang="de-DE">Dateinamen, die nie in die Quarantäne wandern. Beispiel: ^favicon$ oder placeholder</helpText>
+            <helpText lang="en-GB">Filenames that must never be quarantined. Example: ^favicon$ or placeholder</helpText>
+            <defaultValue>favicon
+placeholder
+default-</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>gcCronEnabled</name>
+            <label lang="de-DE">Garbage-Collector-Cron aktivieren</label>
+            <label lang="en-GB">Activate garbage collector cron</label>
+            <helpText lang="de-DE">Wöchentlicher Scan im Read-only-Modus. Verschiebt nur, wenn explizit aktiviert.</helpText>
+            <helpText lang="en-GB">Weekly scan in read-only mode. Only moves to quarantine if explicitly enabled.</helpText>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>gcCronAutoQuarantine</name>
+            <label lang="de-DE">Cron darf in Quarantäne verschieben</label>
+            <label lang="en-GB">Cron may auto-quarantine</label>
+            <helpText lang="de-DE">Vorsicht: Wenn aktiv, verschiebt der Cron-Lauf automatisch ohne manuelle Bestätigung.</helpText>
+            <helpText lang="en-GB">Warning: When active, the cron run moves to quarantine without manual confirmation.</helpText>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>gcUseTempTableUsageMap</name>
+            <label lang="de-DE">TempTable-Modus für große Stores (>5M Medien)</label>
+            <label lang="en-GB">TempTable mode for large stores (>5M media)</label>
+            <helpText lang="de-DE">Set-Difference passiert via SQL-LEFT-JOIN statt PHP-Memory. Empfohlen ab ~5M Medien-Einträgen.</helpText>
+            <helpText lang="en-GB">Set-difference happens via SQL LEFT JOIN instead of PHP memory. Recommended above ~5M media entries.</helpText>
+            <defaultValue>false</defaultValue>
+        </input-field>
+    </card>
+
+    <card>
+        <title lang="de-DE">Health-Check – Einstellungen</title>
+        <title lang="en-GB">Health check – settings</title>
+
+        <input-field type="bool">
+            <name>healthCheckMissingFiles</name>
+            <label lang="de-DE">DB-Eintrag ohne Datei prüfen</label>
+            <label lang="en-GB">Check DB entry without file</label>
+            <defaultValue>true</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>healthCheckOrphanedFiles</name>
+            <label lang="de-DE">Datei ohne DB-Eintrag prüfen</label>
+            <label lang="en-GB">Check file without DB entry</label>
+            <defaultValue>true</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>healthCheckMimeMismatch</name>
+            <label lang="de-DE">MIME-Type-Abweichung prüfen</label>
+            <label lang="en-GB">Check MIME type mismatch</label>
+            <defaultValue>true</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>healthCheckZeroByte</name>
+            <label lang="de-DE">Null-Byte-Dateien prüfen</label>
+            <label lang="en-GB">Check zero-byte files</label>
+            <defaultValue>true</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>healthCheckBrokenThumbnails</name>
+            <label lang="de-DE">Defekte Thumbnails prüfen</label>
+            <label lang="en-GB">Check broken thumbnails</label>
+            <defaultValue>true</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>healthCheckExternalUrls</name>
+            <label lang="de-DE">Externe URLs prüfen (HEAD-Requests, opt-in)</label>
+            <label lang="en-GB">Check external URLs (HEAD requests, opt-in)</label>
+            <helpText lang="de-DE">Achtung: Erzeugt Last auf Drittservern. Nur aktivieren, wenn explizit gewünscht.</helpText>
+            <helpText lang="en-GB">Warning: Generates load on third-party servers. Activate only when explicitly needed.</helpText>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="text">
+            <name>healthExternalAllowlist</name>
+            <label lang="de-DE">Host-Allowlist (kommagetrennt)</label>
+            <label lang="en-GB">Host allowlist (comma-separated)</label>
+            <helpText lang="de-DE">Wenn gesetzt, werden nur Hosts aus dieser Liste geprüft (SSRF-Schutz). Beispiel: cdn.example.com,images.example.com</helpText>
+            <helpText lang="en-GB">When set, only hosts from this list are checked (SSRF protection). Example: cdn.example.com,images.example.com</helpText>
+            <defaultValue></defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>healthBatchSize</name>
+            <label lang="de-DE">Batch-Größe</label>
+            <label lang="en-GB">Batch size</label>
+            <defaultValue>100</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>healthRetentionDays</name>
+            <label lang="de-DE">Retention für gelöste Findings (Tage)</label>
+            <label lang="en-GB">Retention for resolved findings (days)</label>
+            <defaultValue>90</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>healthCronEnabled</name>
+            <label lang="de-DE">Health-Check-Cron aktivieren</label>
+            <label lang="en-GB">Activate health check cron</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
+    </card>
+
+    <card>
+        <title lang="de-DE">WebP-Optimizer – Einstellungen</title>
+        <title lang="en-GB">WebP optimizer – settings</title>
+
+        <input-field type="int">
+            <name>webpDefaultQuality</name>
+            <label lang="de-DE">Default-Qualität (0–100)</label>
+            <label lang="en-GB">Default quality (0–100)</label>
+            <defaultValue>82</defaultValue>
+        </input-field>
+
+        <input-field type="text">
+            <name>webpEncoderPreference</name>
+            <label lang="de-DE">Encoder-Reihenfolge (komma-getrennt)</label>
+            <label lang="en-GB">Encoder preference (comma-separated)</label>
+            <helpText lang="de-DE">Verfügbare Encoder: cwebp, libvips, imagick, gd. Beim ersten verfügbaren wird gestoppt.</helpText>
+            <helpText lang="en-GB">Available encoders: cwebp, libvips, imagick, gd. Stops at first available.</helpText>
+            <defaultValue>cwebp,libvips,imagick,gd</defaultValue>
+        </input-field>
+
+        <input-field type="text">
+            <name>webpCwebpPath</name>
+            <label lang="de-DE">Pfad zur cwebp-Binary</label>
+            <label lang="en-GB">Path to cwebp binary</label>
+            <defaultValue>/usr/bin/cwebp</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>webpMinFileSizeKb</name>
+            <label lang="de-DE">Mindest-Dateigröße in KB (kleinere überspringen)</label>
+            <label lang="en-GB">Minimum file size in KB (smaller files skipped)</label>
+            <defaultValue>10</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>webpCwebpTimeoutSeconds</name>
+            <label lang="de-DE">cwebp-Timeout in Sekunden</label>
+            <label lang="en-GB">cwebp timeout in seconds</label>
+            <helpText lang="de-DE">Zeit-Budget pro Bild für die cwebp-Konvertierung. Bei sehr großen Bildern erhöhen.</helpText>
+            <helpText lang="en-GB">Time budget per image for cwebp encoding. Increase for very large images.</helpText>
+            <defaultValue>60</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>webpDefaultLossless</name>
+            <label lang="de-DE">Default Lossless-Modus</label>
+            <label lang="en-GB">Default lossless mode</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>webpDefaultStripMetadata</name>
+            <label lang="de-DE">Default: EXIF/IPTC entfernen (DSGVO)</label>
+            <label lang="en-GB">Default: strip EXIF/IPTC (GDPR)</label>
+            <defaultValue>true</defaultValue>
+        </input-field>
+
+        <input-field type="textarea">
+            <name>webpFolderSettingsJson</name>
+            <label lang="de-DE">Pro-Folder-Settings (JSON)</label>
+            <label lang="en-GB">Per-folder settings (JSON)</label>
+            <helpText lang="de-DE">JSON-Map: Folder-Name → {quality, lossless, stripMetadata}. Beispiel: {"products": {"quality": 80, "lossless": false}, "icons": {"quality": 100, "lossless": true, "stripMetadata": false}}. Bei leerer Eingabe werden die Default-Werte verwendet.</helpText>
+            <helpText lang="en-GB">JSON map: folder-name → {quality, lossless, stripMetadata}. Example: {"products": {"quality": 80, "lossless": false}}. Empty = use defaults.</helpText>
+            <defaultValue></defaultValue>
+        </input-field>
+
+        <input-field type="text">
+            <name>webpFormatWhitelist</name>
+            <label lang="de-DE">Konvertierbare Formate (komma-getrennt)</label>
+            <label lang="en-GB">Convertible formats (comma-separated)</label>
+            <defaultValue>jpeg,jpg,png</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>webpAutoConvertOnUpload</name>
+            <label lang="de-DE">Beim Upload automatisch konvertieren</label>
+            <label lang="en-GB">Auto-convert on upload</label>
+            <defaultValue>true</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>webpBulkCronEnabled</name>
+            <label lang="de-DE">Bulk-Cron aktivieren</label>
+            <label lang="en-GB">Activate bulk cron</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="bool">
+            <name>webpSubscriberEnabled</name>
+            <label lang="de-DE">Storefront-Picture-Subscriber aktivieren (opt-in)</label>
+            <label lang="en-GB">Activate storefront picture subscriber (opt-in)</label>
+            <helpText lang="de-DE">Tauscht img-Tags durch picture-Tags mit WebP-Source. Performance-Impact prüfen.</helpText>
+            <helpText lang="en-GB">Swaps img tags with picture tags including WebP source. Check performance impact.</helpText>
+            <defaultValue>false</defaultValue>
+        </input-field>
+    </card>
+
+    <card>
+        <title lang="de-DE">Smart-Fix Repair (vorsichtig aktivieren)</title>
+        <title lang="en-GB">Smart-Fix Repair (activate carefully)</title>
+
+        <input-field type="bool">
+            <name>repairEnabled</name>
+            <label lang="de-DE">Repair-Modul aktivieren</label>
+            <label lang="en-GB">Activate repair module</label>
+            <helpText lang="de-DE">Bricht den Read-only-Vertrag des Health-Checks. Vorher Backup empfohlen.</helpText>
+            <helpText lang="en-GB">Breaks read-only contract of health check. Backup recommended first.</helpText>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>repairMaxLevenshteinDistance</name>
+            <label lang="de-DE">Maximale Levenshtein-Distanz für Match-Vorschläge</label>
+            <label lang="en-GB">Maximum Levenshtein distance for match suggestions</label>
+            <defaultValue>3</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>repairAuditRetentionDays</name>
+            <label lang="de-DE">Audit-Retention in Tagen (0 = nie löschen)</label>
+            <label lang="en-GB">Audit retention in days (0 = never delete)</label>
+            <helpText lang="de-DE">DSGVO-relevant: setzt eine Frist für die forensische Audit-Tabelle. 0 = Insert-only.</helpText>
+            <helpText lang="en-GB">GDPR-relevant: sets retention for the forensic audit table. 0 = insert-only.</helpText>
+            <defaultValue>0</defaultValue>
+        </input-field>
+    </card>
+</config>

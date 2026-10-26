@@ -1,0 +1,35 @@
+# EditorConfig – https://editorconfig.org
+root = true
+
+# Alle Dateien
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# PHP
+[*.php]
+indent_size = 4
+
+# Twig Templates
+[*.twig]
+indent_size = 4
+
+# YAML – Symfony Config
+[*.{yml,yaml}]
+indent_size = 4
+
+# JSON
+[*.json]
+indent_size = 4
+
+# XML
+[*.xml]
+indent_size = 4
+
+# Markdown
+[*.md]
+trim_trailing_whitespace = false

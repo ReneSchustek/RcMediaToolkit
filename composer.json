@@ -1,0 +1,70 @@
+{
+    "name": "ruhrcoder/rc-media-toolkit",
+    "description": "Wartungs-Tools für Shopware-Medien: Garbage-Collection, Health-Check und WebP-Optimierung in einem Plugin",
+    "version": "1.4.1",
+    "type": "shopware-platform-plugin",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Ruhrcoder",
+            "homepage": "https://ruhrcoder.de"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "shopware/core": "~6.7.0 || ~6.8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ruhrcoder\\RcMediaToolkit\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Ruhrcoder\\RcMediaToolkit\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5 || ^11.0",
+        "phpstan/phpstan": "^2.2",
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "doctrine/dbal": "^3.0 || ^4.0",
+        "shopwarelabs/phpstan-shopware": "^0.2"
+    },
+    "config": {
+        "allow-plugins": {
+            "symfony/runtime": true
+        },
+        "platform": {
+            "php": "8.2.0"
+        },
+        "audit": {
+            "ignore": {
+                "PKSA-p9gd-j6gr-6f9t": "Betroffen ist allein der MCP-Client (Mcp\\Client\\Transport\\HttpTransport): Sein SSE-Puffer wächst unbegrenzt, wenn der Gegenserver die Leerzeile zurückhält. Shopware nutzt ausschließlich die Server-Seite (StreamableHttpTransport); im Kern 6.7.13.0 und in allen Rc-Erweiterungen: null Aufrufe der Client-Klassen. Behoben ist mcp/sdk 0.7.1, doch shopware/core pinnt bis 6.7.13.0 auf ^0.6.0 und kann sie nicht ziehen. Wieder vorlegen: 2026-11-01."
+            }
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test:unit": "vendor/bin/phpunit --testsuite=Unit",
+        "phpstan": "vendor/bin/phpstan analyse --memory-limit=512M",
+        "cs-fix": "vendor/bin/php-cs-fixer fix",
+        "cs-check": "vendor/bin/php-cs-fixer fix --dry-run --diff",
+        "quality": [
+            "@cs-check",
+            "@phpstan",
+            "@test"
+        ]
+    },
+    "extra": {
+        "shopware-plugin-class": "Ruhrcoder\\RcMediaToolkit\\RcMediaToolkit",
+        "label": {
+            "de-DE": "Media-Toolkit",
+            "en-GB": "Media Toolkit"
+        },
+        "description": {
+            "de-DE": "Wartungs-Tools für Shopware-Medien: Garbage-Collection, Health-Check und WebP-Optimierung. CLI-basiert, Backoffice-orientiert, kein Storefront-Footprint per Default.",
+            "en-GB": "Maintenance tools for Shopware media: garbage collection, health check and WebP optimization. CLI-driven, backoffice-focused, no storefront footprint by default."
+        }
+    }
+}

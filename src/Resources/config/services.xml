@@ -1,0 +1,389 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+           http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <!-- Geteilte Services -->
+
+        <service id="Ruhrcoder\RcMediaToolkit\Service\MediaRepositoryWrapper">
+            <argument type="service" id="media.repository"/>
+        </service>
+        <service id="Ruhrcoder\RcMediaToolkit\Service\MediaRepositoryWrapperInterface"
+                 alias="Ruhrcoder\RcMediaToolkit\Service\MediaRepositoryWrapper"/>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Service\FilesystemAdapter">
+            <argument type="service" id="shopware.filesystem.public"/>
+        </service>
+        <service id="Ruhrcoder\RcMediaToolkit\Service\FilesystemAdapterInterface"
+                 alias="Ruhrcoder\RcMediaToolkit\Service\FilesystemAdapter"/>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Service\MediaToolkitLogger">
+            <argument type="service" id="logger"/>
+            <tag name="monolog.logger" channel="rc_media_toolkit"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Service\ModuleRegistry">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Service\MediaReferenceSources">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+        </service>
+
+        <!-- Status-Command -->
+
+        <service id="Ruhrcoder\RcMediaToolkit\Command\StatusCommand">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\ModuleRegistry"/>
+            <tag name="console.command"/>
+        </service>
+
+        <!-- ==================== Garbage Collector ==================== -->
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Service\ExclusionMatcher">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Service\MediaUsageIndexer">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\MediaToolkitLogger"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\MediaReferenceSources"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Service\UsageMapFactory">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Service\OrphanedMediaFinder">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Service\MediaUsageIndexer"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Service\ExclusionMatcher"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Service\UsageMapFactory"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Service\MediaQuarantineService">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\FilesystemAdapterInterface"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\MediaToolkitLogger"/>
+            <argument>%kernel.project_dir%</argument>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Report\ReportFormatterRegistry">
+            <argument type="tagged_iterator" tag="rc_media_toolkit.gc_report_formatter"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Report\ConsoleReportFormatter">
+            <tag name="rc_media_toolkit.gc_report_formatter"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Report\JsonReportFormatter">
+            <tag name="rc_media_toolkit.gc_report_formatter"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Report\CsvReportFormatter">
+            <tag name="rc_media_toolkit.gc_report_formatter"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Command\GarbageCollectorScanCommand">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\ModuleRegistry"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Service\OrphanedMediaFinder"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Service\MediaQuarantineService"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Report\ReportFormatterRegistry"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\MediaToolkitLogger"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Command\GarbageCollectorRestoreCommand">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Service\MediaQuarantineService"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Command\GarbageCollectorPurgeCommand">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Service\MediaQuarantineService"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\ScheduledTask\MediaGarbageCollectorTask">
+            <tag name="shopware.scheduled.task"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\ScheduledTask\MediaGarbageCollectorTaskHandler">
+            <argument type="service" id="scheduled_task.repository"/>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\ModuleRegistry"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Service\OrphanedMediaFinder"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Service\MediaQuarantineService"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\MediaToolkitLogger"/>
+            <tag name="messenger.message_handler"/>
+        </service>
+
+        <!-- ==================== Health Check ==================== -->
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Repository\HealthReportRepository">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Service\HealthCheckRunner">
+            <argument type="tagged_iterator" tag="rc_media_toolkit.health_check"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Repository\HealthReportRepository"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\MediaToolkitLogger"/>
+        </service>
+
+        <!-- Einzelne Checks -->
+        <service id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Check\MissingFileCheck">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\FilesystemAdapterInterface"/>
+            <tag name="rc_media_toolkit.health_check"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Check\OrphanedFileCheck">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\FilesystemAdapterInterface"/>
+            <tag name="rc_media_toolkit.health_check"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Check\MimeMismatchCheck">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\FilesystemAdapterInterface"/>
+            <tag name="rc_media_toolkit.health_check"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Check\ZeroByteCheck">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\FilesystemAdapterInterface"/>
+            <tag name="rc_media_toolkit.health_check"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Check\BrokenThumbnailCheck">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\FilesystemAdapterInterface"/>
+            <tag name="rc_media_toolkit.health_check"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Check\BrokenCmsReferenceCheck">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <tag name="rc_media_toolkit.health_check"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Check\ExternalUrlCheck">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <tag name="rc_media_toolkit.health_check"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Command\HealthCheckScanCommand">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\ModuleRegistry"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Service\HealthCheckRunner"/>
+            <argument type="service" id="messenger.bus.default"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Command\HealthCheckReportCommand">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Repository\HealthReportRepository"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Message\CheckMediaBatchHandler">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Service\HealthCheckRunner"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\MediaToolkitLogger"/>
+            <tag name="messenger.message_handler"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\ScheduledTask\HealthCheckScanTask">
+            <tag name="shopware.scheduled.task"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\ScheduledTask\HealthCheckScanTaskHandler">
+            <argument type="service" id="scheduled_task.repository"/>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\ModuleRegistry"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Service\HealthCheckRunner"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Repository\HealthReportRepository"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <tag name="messenger.message_handler"/>
+        </service>
+
+        <!-- ==================== WebP Optimizer ==================== -->
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\Encoder\CwebpBinaryEncoder">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\MediaToolkitLogger"/>
+            <tag name="rc_media_toolkit.webp_encoder"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\Encoder\LibvipsEncoder">
+            <tag name="rc_media_toolkit.webp_encoder"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\Encoder\ImagickEncoder">
+            <tag name="rc_media_toolkit.webp_encoder"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\Encoder\GdEncoder">
+            <tag name="rc_media_toolkit.webp_encoder"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\EncoderChain">
+            <argument type="tagged_iterator" tag="rc_media_toolkit.webp_encoder"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\MediaToolkitLogger"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\WebPSettingsResolver">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\MediaToolkitLogger"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\WebPConverter">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\EncoderChain"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\FilesystemAdapterInterface"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\MediaToolkitLogger"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\WebPSettingsResolver"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\WebPRegistry">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\FilesystemAdapterInterface"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Command\WebPConvertCommand">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\ModuleRegistry"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\WebPRegistry"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\WebPConverter"/>
+            <argument type="service" id="messenger.bus.default"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Command\WebPStatusCommand">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\WebPRegistry"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\EncoderChain"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Message\WebPConvertMessageHandler">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\WebPConverter"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\MediaToolkitLogger"/>
+            <tag name="messenger.message_handler"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Twig\RcWebpExtension">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\ModuleRegistry"/>
+            <tag name="twig.extension"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Subscriber\WebPPictureSubscriber">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\ModuleRegistry"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\FilesystemAdapterInterface"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\MediaToolkitLogger"/>
+            <argument type="service" id="cache.object"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\ScheduledTask\WebPBulkConvertTask">
+            <tag name="shopware.scheduled.task"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\ScheduledTask\WebPBulkConvertTaskHandler">
+            <argument type="service" id="scheduled_task.repository"/>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\ModuleRegistry"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\WebPRegistry"/>
+            <argument type="service" id="messenger.bus.default"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <tag name="messenger.message_handler"/>
+        </service>
+
+        <!-- ==================== Smart-Fix Repair ==================== -->
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\Repair\Service\RepairProposalService">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\Repair\Service\MediaReferenceUpdater">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\MediaReferenceSources"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\Repair\Service\RepairExecutor">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\MediaToolkitLogger"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\Repair\Service\MediaReferenceUpdater"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\Repair\Command\RepairListCommand">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\Repair\Service\RepairProposalService"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Repository\HealthReportRepository"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\Repair\Command\RepairApplyCommand">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\Repair\Service\RepairProposalService"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\Repair\Service\RepairExecutor"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Repository\HealthReportRepository"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\Repair\Command\RepairRollbackCommand">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\Repair\Service\RepairExecutor"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\Repair\Service\RepairAuditRepository">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\Repair\ScheduledTask\RepairAuditCleanupTask">
+            <tag name="shopware.scheduled.task"/>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Module\Repair\ScheduledTask\RepairAuditCleanupTaskHandler">
+            <argument type="service" id="scheduled_task.repository"/>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\Repair\Service\RepairAuditRepository"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\MediaToolkitLogger"/>
+            <tag name="messenger.message_handler"/>
+        </service>
+
+        <!-- ==================== Admin-API ==================== -->
+
+        <service id="Ruhrcoder\RcMediaToolkit\Controller\Admin\StatusController" public="true">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Service\ModuleRegistry"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Repository\HealthReportRepository"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\WebPRegistry"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\WebPOptimizer\Service\EncoderChain"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Controller\Admin\GarbageCollectorController" public="true">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Service\OrphanedMediaFinder"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\GarbageCollector\Service\MediaQuarantineService"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <service id="Ruhrcoder\RcMediaToolkit\Controller\Admin\HealthCheckController" public="true">
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Repository\HealthReportRepository"/>
+            <argument type="service" id="messenger.bus.default"/>
+            <argument type="service" id="Ruhrcoder\RcMediaToolkit\Module\HealthCheck\Service\HealthCheckRunner"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+    </services>
+</container>

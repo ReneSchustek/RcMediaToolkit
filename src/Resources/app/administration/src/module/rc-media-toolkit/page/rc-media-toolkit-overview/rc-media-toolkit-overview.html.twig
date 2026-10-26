@@ -1,0 +1,86 @@
+{% block rc_media_toolkit_overview %}
+<sw-page class="rc-media-toolkit-overview">
+    {% block rc_media_toolkit_overview_smart_bar_header %}
+    <template #smart-bar-header>
+        <h2>{{ $tc('rc-media-toolkit.overview.title') }}</h2>
+    </template>
+    {% endblock %}
+
+    {% block rc_media_toolkit_overview_content %}
+    <template #content>
+        <sw-card-view>
+            <sw-card v-if="isLoading" :title="$tc('rc-media-toolkit.overview.loading')">
+                <sw-loader></sw-loader>
+            </sw-card>
+
+            {% block rc_media_toolkit_overview_modules %}
+            <sw-card v-else-if="status" :title="$tc('rc-media-toolkit.overview.modulesTitle')">
+                <p class="rc-media-toolkit-overview__hint">
+                    {{ $tc('rc-media-toolkit.overview.modulesHint') }}
+                </p>
+                <sw-data-grid
+                    :data-source="moduleRows"
+                    :columns="[
+                        { property: 'name', label: $tc('rc-media-toolkit.overview.columnModule') },
+                        { property: 'state', label: $tc('rc-media-toolkit.overview.columnActive') },
+                    ]"
+                    :show-selection="false"
+                    :show-actions="false">
+                </sw-data-grid>
+            </sw-card>
+            {% endblock %}
+
+            {% block rc_media_toolkit_overview_health %}
+            <sw-card v-if="status && status.health" :title="$tc('rc-media-toolkit.overview.healthTitle')">
+                <sw-data-grid
+                    v-if="severityRows.length"
+                    :data-source="severityRows"
+                    :columns="[
+                        { property: 'severity', label: $tc('rc-media-toolkit.overview.columnSeverity') },
+                        { property: 'count', label: $tc('rc-media-toolkit.overview.columnCount') },
+                    ]"
+                    :show-selection="false"
+                    :show-actions="false">
+                </sw-data-grid>
+                <p v-else>{{ $tc('rc-media-toolkit.overview.healthEmpty') }}</p>
+            </sw-card>
+            {% endblock %}
+
+            {% block rc_media_toolkit_overview_webp %}
+            <sw-card v-if="status && status.webp" :title="$tc('rc-media-toolkit.overview.webpTitle')">
+                <p class="rc-media-toolkit-overview__hint">
+                    {{ $tc('rc-media-toolkit.overview.webpSampleHint') }}
+                </p>
+                <sw-data-grid
+                    :data-source="webpRows"
+                    :columns="[
+                        { property: 'label', label: $tc('rc-media-toolkit.overview.columnMetric') },
+                        { property: 'value', label: $tc('rc-media-toolkit.overview.columnCount') },
+                    ]"
+                    :show-selection="false"
+                    :show-actions="false">
+                </sw-data-grid>
+            </sw-card>
+            {% endblock %}
+
+            {% block rc_media_toolkit_overview_encoders %}
+            <sw-card v-if="status && status.webp" :title="$tc('rc-media-toolkit.overview.encodersTitle')">
+                <p class="rc-media-toolkit-overview__hint">
+                    {{ $tc('rc-media-toolkit.overview.encodersHint') }}
+                </p>
+                <sw-data-grid
+                    :data-source="encoderRows"
+                    :columns="[
+                        { property: 'name', label: $tc('rc-media-toolkit.overview.columnEncoder') },
+                        { property: 'state', label: $tc('rc-media-toolkit.overview.columnAvailability') },
+                    ]"
+                    :show-selection="false"
+                    :show-actions="false">
+                </sw-data-grid>
+            </sw-card>
+            {% endblock %}
+        </sw-card-view>
+    </template>
+    {% endblock %}
+</sw-page>
+{% endblock %}

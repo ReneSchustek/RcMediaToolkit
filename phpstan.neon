@@ -1,0 +1,33 @@
+includes:
+    - vendor/shopwarelabs/phpstan-shopware/rules.neon
+
+parameters:
+    level: 8
+    paths:
+        - src
+        - tests
+    excludePaths:
+        - vendor
+    bootstrapFiles:
+        - vendor/autoload.php
+    ignoreErrors:
+        # Das Plugin **ist** ein Medienwerkzeug: Es stellt Dateien in Quarantäne, holt sie zurück
+        # und schreibt umgewandelte Bilder. Diese Aufrufe sind seine Aufgabe, kein Versehen. Die
+        # Ziele liegen unter `var/` beziehungsweise im Medienverzeichnis der Installation.
+        -
+            message: '#Usage of (mkdir|rmdir|unlink|rename|file_put_contents) is forbidden to local files#'
+            paths:
+                - src/*
+                - tests/*
+
+        # Ohne fortlaufende Schlüssel wird aus dem Feld im Manifest ein Objekt. Der Aufruf hält
+        # diese Ausgabeform fest, auch wenn die Typangabe sie zurzeit schon zusichert.
+        -
+            message: '#of array_values is already a list, call has no effect#'
+            path: tests/Unit/Module/GarbageCollector/Service/MediaQuarantineLifecycleTest.php
+
+        # In Tests gibt es keinen Aufrufer. Ein aufgebauter Nutzerkontext täuschte dort eine
+        # Abhängigkeit vor, die der Test gar nicht hat.
+        -
+            message: '#Do not use Shopware\\Core\\Framework\\Context::createDefaultContext#'
+            path: tests/*

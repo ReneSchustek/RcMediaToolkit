@@ -1,0 +1,37 @@
+# ============================================================
+# .gitignore – RcMediaToolkit
+# ============================================================
+
+# Secrets / Umgebungsvariablen
+.env
+.env.local
+.env.*.local
+!.env.example
+secrets.json
+*.pfx
+*.p12
+*.key
+config/secrets/
+
+# Logs
+*.log
+/logs/
+
+# PHP
+vendor/
+var/
+.phpunit.cache/
+.php-cs-fixer.cache
+
+# Node (Admin-UI)
+node_modules/
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+
+# composer.lock — Library-Plugins liefern keinen Lock mit
+composer.lock

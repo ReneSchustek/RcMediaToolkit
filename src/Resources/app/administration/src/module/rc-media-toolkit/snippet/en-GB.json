@@ -1,0 +1,51 @@
+{
+  "rc-media-toolkit": {
+    "general": {
+      "mainMenuItemGeneral": "Media Toolkit",
+      "description": "Maintenance tools for Shopware media"
+    },
+    "overview": {
+      "title": "Media Toolkit – Overview",
+      "loading": "Loading status…",
+      "loadError": "Could not load status.",
+      "modulesTitle": "Modules",
+      "modulesHint": "All modules ship switched off and are enabled individually in the plugin settings.",
+      "healthTitle": "Open health check findings",
+      "healthEmpty": "No open findings.",
+      "webpTitle": "WebP coverage",
+      "webpSampleHint": "Sample: coverage figures look at up to 1000 media items. Only “media total” is a complete count.",
+      "webpTotal": "Media total",
+      "webpEligible": "of which convertible (JPEG/PNG)",
+      "webpWith": "of which with a WebP version",
+      "webpWithout": "of which without a WebP version",
+      "encodersTitle": "Encoders",
+      "encodersHint": "The first available encoder in the chain is used. Which one applies decides image quality and runtime.",
+      "encoderAvailable": "available",
+      "encoderMissing": "not available",
+      "columnModule": "Module",
+      "columnActive": "State",
+      "columnSeverity": "Severity",
+      "columnCount": "Count",
+      "columnMetric": "Metric",
+      "columnEncoder": "Encoder",
+      "columnAvailability": "State",
+      "stateActive": "active",
+      "stateInactive": "off",
+      "module": {
+        "garbageCollector": "Orphaned media collector",
+        "healthCheck": "Media health check",
+        "webPOptimizer": "WebP conversion"
+      }
+    }
+  },
+  "sw-privileges": {
+    "additional_permissions": {},
+    "permissions": {
+      "rc_media_toolkit": {
+        "label": "Media toolkit",
+        "viewer": "View",
+        "editor": "Trigger runs"
+      }
+    }
+  }
+}

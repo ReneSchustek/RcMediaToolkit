@@ -1,0 +1,23 @@
+{
+  "base": "/bundles/rcmediatoolkit/administration/",
+  "entryPoints": {
+    "rc-media-toolkit": {
+      "css": [],
+      "dynamic": [],
+      "js": [
+        "/bundles/rcmediatoolkit/administration/assets/rc-media-toolkit-CA8Yu3iZ.js"
+      ],
+      "legacy": false,
+      "preload": []
+    }
+  },
+  "legacy": false,
+  "metadatas": {},
+  "version": [
+    "7.1.0",
+    7,
+    1,
+    0
+  ],
+  "viteServer": null
+}

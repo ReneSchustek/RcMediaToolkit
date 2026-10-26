@@ -1,0 +1,51 @@
+{
+  "rc-media-toolkit": {
+    "general": {
+      "mainMenuItemGeneral": "Media-Toolkit",
+      "description": "Wartungs-Tools für Shopware-Medien"
+    },
+    "overview": {
+      "title": "Media-Toolkit – Übersicht",
+      "loading": "Lade Status…",
+      "loadError": "Status konnte nicht geladen werden.",
+      "modulesTitle": "Module",
+      "modulesHint": "Alle Module sind im Auslieferungszustand ausgeschaltet und werden einzeln in den Plugin-Einstellungen aktiviert.",
+      "healthTitle": "Offene Befunde der Medienprüfung",
+      "healthEmpty": "Keine offenen Befunde.",
+      "webpTitle": "WebP-Bestand",
+      "webpSampleHint": "Stichprobe: Für die Bestandszahlen werden höchstens 1000 Medien angesehen. Nur „Medien gesamt“ ist vollständig gezählt.",
+      "webpTotal": "Medien gesamt",
+      "webpEligible": "davon umwandelbar (JPEG/PNG)",
+      "webpWith": "davon mit WebP-Fassung",
+      "webpWithout": "davon ohne WebP-Fassung",
+      "encodersTitle": "Umwandler",
+      "encodersHint": "Der erste verfügbare Umwandler der Reihe wird benutzt. Welcher greift, entscheidet über Bildqualität und Laufzeit.",
+      "encoderAvailable": "verfügbar",
+      "encoderMissing": "nicht verfügbar",
+      "columnModule": "Modul",
+      "columnActive": "Zustand",
+      "columnSeverity": "Schwere",
+      "columnCount": "Anzahl",
+      "columnMetric": "Kennzahl",
+      "columnEncoder": "Umwandler",
+      "columnAvailability": "Zustand",
+      "stateActive": "aktiv",
+      "stateInactive": "aus",
+      "module": {
+        "garbageCollector": "Aufräumer für verwaiste Medien",
+        "healthCheck": "Medienprüfung",
+        "webPOptimizer": "WebP-Umwandlung"
+      }
+    }
+  },
+  "sw-privileges": {
+    "additional_permissions": {},
+    "permissions": {
+      "rc_media_toolkit": {
+        "label": "Medien-Werkzeugkasten",
+        "viewer": "Lesen",
+        "editor": "Läufe auslösen"
+      }
+    }
+  }
+}
