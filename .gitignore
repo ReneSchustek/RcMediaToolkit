@@ -32,6 +32,26 @@ dist/
 .vscode/
 *.swp
 
+# ============================================================
+# Werkzeug- und Projektnotizen gehören nicht ins Repository
+# ============================================================
+.ai/
+.claude/
+CLAUDE.md
+brief.md
+brief-template.md
+.gitignore-template
+coverage-snapshot.sh
 
 # composer.lock — Library-Plugins liefern keinen Lock mit
 composer.lock
+
+# Die Ausnahmeliste des Spurenprüfers gehört ins Repository.
+#
+# Die globale Ausschlussliste filtert `.ai-trace-ignore` — gedacht war die Kopie, die
+# früher in jedem Projekt lag. Sie versteckt aber auch diese eine, die der Prüfer
+# tatsächlich liest. Der Fehler fällt nicht auf: Er liest sie aus dem
+# Arbeitsverzeichnis, meldet sauber, und man hält die Ausnahme für eingetragen —
+# während jeder Klon und jeder Lauf im Fließband ohne sie dasteht. Am 2026-09-07 traf
+# das 17 von 22 Erweiterungen.
+!.ai-trace-ignore

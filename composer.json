@@ -40,7 +40,7 @@
         },
         "audit": {
             "ignore": {
-                "PKSA-p9gd-j6gr-6f9t": "Betroffen ist allein der MCP-Client (Mcp\\Client\\Transport\\HttpTransport): Sein SSE-Puffer wächst unbegrenzt, wenn der Gegenserver die Leerzeile zurückhält. Shopware nutzt ausschließlich die Server-Seite (StreamableHttpTransport); im Kern 6.7.13.0 und in allen Rc-Erweiterungen: null Aufrufe der Client-Klassen. Behoben ist mcp/sdk 0.7.1, doch shopware/core pinnt bis 6.7.13.0 auf ^0.6.0 und kann sie nicht ziehen. Wieder vorlegen: 2026-11-01."
+                "PKSA-s52d-n7sx-trsg": "Betroffen ist allein die OAuth-Zwischenschicht von mcp/sdk 0.8 (GHSA-f4rf-6ghj-mhr6): Ihre Endpunkte lesen Anfragen ohne Größengrenze. Shopware 6.7.15 nutzt nur StreamableHttpTransport mit eigener Anmeldung (McpAuthenticationListener), nicht diese Zwischenschicht. Die behobene Fassung 0.9.0 lässt der Kern noch nicht zu. Freigegeben von Rene am 10.11.2026, Wiedervorlage 01.02.2027 oder sobald Shopware mcp/sdk 0.9 erlaubt."
             }
         }
     },
