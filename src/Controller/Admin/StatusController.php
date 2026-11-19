@@ -46,6 +46,7 @@ final class StatusController extends AbstractController
             ],
             'webp' => [
                 'stats' => $this->webPRegistry->stats(),
+                'thumbnailStats' => $this->webPRegistry->thumbnailStats(),
                 'encoders' => $this->encoderChain->availabilityMap(),
                 'encoderVersions' => $this->encoderChain->versionMap(),
             ],

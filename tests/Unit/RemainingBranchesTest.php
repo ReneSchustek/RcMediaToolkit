@@ -204,7 +204,7 @@ final class RemainingBranchesTest extends TestCase
                 : [],
         );
 
-        $registry = new WebPRegistry($connection, new RecordingFilesystem([]));
+        $registry = new WebPRegistry($connection, new RecordingFilesystem(['media/ab/echt.jpg' => 'bild']));
 
         self::assertSame(['media/ab/echt.jpg'], iterator_to_array($registry->pathsMissingWebp(), false));
     }

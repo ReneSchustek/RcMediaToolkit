@@ -282,8 +282,9 @@ final class BackgroundWorkContractTest extends TestCase
             static fn (string $sql, array $params = []): array => (int) ($params['offset'] ?? 0) === 0 ? $rows : [],
         );
 
+        // Die Quelldateien sind da, Fassungen gibt es noch keine.
         $filesystem = $this->createMock(FilesystemAdapterInterface::class);
-        $filesystem->method('exists')->willReturn(false);
+        $filesystem->method('exists')->willReturnCallback(static fn (string $path): bool => !str_ends_with($path, '.webp'));
 
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->method('dispatch')->willReturnCallback(

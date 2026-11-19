@@ -55,7 +55,6 @@ final class WebPPictureSubscriberRegexTest extends TestCase
 
         $reflection = new ReflectionClass($subscriber);
         $method = $reflection->getMethod('isExcludedPath');
-        $method->setAccessible(true);
 
         self::assertSame($expected, $method->invoke($subscriber, $path));
     }
@@ -126,7 +125,7 @@ final class WebPPictureSubscriberRegexTest extends TestCase
     }
 
     #[Test]
-    public function rewriteSkipsImgWithExistingSrcset(): void
+    public function rewriteSkipsSrcsetWithoutAnyVariant(): void
     {
         $fs = new FakeFilesystem(['media/x.jpg.webp' => true]);
         $subscriber = $this->buildSubscriber($fs);
@@ -134,7 +133,7 @@ final class WebPPictureSubscriberRegexTest extends TestCase
         $body = '<img src="/media/x.jpg" srcset="/media/x@2x.jpg 2x">';
         $result = $this->callRewrite($subscriber, $body);
 
-        self::assertStringNotContainsString('<picture>', $result, 'srcset-Tags sollen unangetastet bleiben');
+        self::assertStringNotContainsString('<picture>', $result, 'Hat keine Größe im srcset eine Fassung, bleibt das Bild, wie es ist.');
     }
 
     #[Test]
@@ -168,7 +167,6 @@ final class WebPPictureSubscriberRegexTest extends TestCase
 
         $reflection = new ReflectionClass($subscriber);
         $method = $reflection->getMethod('urlToFilesystemPath');
-        $method->setAccessible(true);
 
         self::assertNull($method->invoke($subscriber, $url));
     }
@@ -300,7 +298,6 @@ final class WebPPictureSubscriberRegexTest extends TestCase
     {
         $reflection = new ReflectionClass($subscriber);
         $method = $reflection->getMethod('rewriteImgTags');
-        $method->setAccessible(true);
         return (string) $method->invoke($subscriber, $body);
     }
 }

@@ -199,7 +199,7 @@ final class EncoderAndWorkerTest extends TestCase
             'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
             true,
         );
-        self::assertIsString($bytes);
+        self::assertNotFalse($bytes);
 
         return $bytes;
     }

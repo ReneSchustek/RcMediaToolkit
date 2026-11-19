@@ -214,7 +214,8 @@ final class WebPCommandsTest extends TestCase
 
         return new WebPConvertCommand(
             new ModuleRegistry($config),
-            new WebPRegistry($connection, new RecordingFilesystem([])),
+            // Die Quelldateien liegen da; die Arbeitsliste nimmt nur auf, was sie bearbeiten kann.
+            new WebPRegistry($connection, new RecordingFilesystem(array_fill_keys($paths, 'bild'))),
             $this->converter($converted, $failFor),
             $bus,
         );

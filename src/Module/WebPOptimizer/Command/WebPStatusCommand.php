@@ -51,6 +51,18 @@ final class WebPStatusCommand extends Command
             ],
         );
 
+        $thumbnails = $this->registry->thumbnailStats();
+        $io->section('Vorschaubilder öffentlicher Medien (Sample-basiert)');
+        $io->table(
+            ['Metrik', 'Wert'],
+            [
+                ['Vorschaubilder gesamt', $thumbnails['total']],
+                ['Konvertierbar (JPEG/PNG)', $thumbnails['eligible']],
+                ['mit WebP', $thumbnails['withWebp']],
+                ['ohne WebP', $thumbnails['withoutWebp']],
+            ],
+        );
+
         $io->section('Encoder-Verfügbarkeit');
         $rows = [];
         foreach ($this->encoderChain->availabilityMap() as $name => $available) {

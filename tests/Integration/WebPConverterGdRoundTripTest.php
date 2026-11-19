@@ -148,6 +148,39 @@ final class WebPConverterGdRoundTripTest extends TestCase
         }
     }
 
+    /**
+     * Was: Ein PNG mit Farbpalette und durchsichtigem Hintergrund, wie die Maßbilder.
+     * Warum: `imagewebp()` lehnt Palettenbilder ab, und ohne mitgeschriebenen Alphakanal wird
+     *        Durchsichtiges schwarz. Beides sähe man erst im Shop: einmal gar keine Fassung,
+     *        einmal ein Freisteller auf schwarzem Grund.
+     */
+    #[Test]
+    public function aTransparentPalettePngKeepsItsTransparency(): void
+    {
+        $image = imagecreate(64, 64);
+        self::assertNotFalse($image);
+        $transparent = (int) imagecolorallocatealpha($image, 255, 255, 255, 127);
+        imagecolortransparent($image, $transparent);
+        imagefill($image, 0, 0, $transparent);
+        imagefilledrectangle($image, 16, 16, 47, 47, (int) imagecolorallocate($image, 200, 30, 30));
+        self::assertFalse(imageistruecolor($image));
+
+        ob_start();
+        imagepng($image);
+        $png = (string) ob_get_clean();
+
+        $webp = (new GdEncoder())->encode($png, 'png', 82, false, true);
+
+        self::assertSame('WEBP', substr($webp, 8, 4));
+        $decoded = imagecreatefromstring($webp);
+        self::assertNotFalse($decoded);
+        $corner = imagecolorsforindex($decoded, (int) imagecolorat($decoded, 2, 2));
+        $centre = imagecolorsforindex($decoded, (int) imagecolorat($decoded, 32, 32));
+        self::assertGreaterThan(100, $corner['alpha'], 'Die Ecke bleibt durchsichtig.');
+        self::assertLessThan(20, $centre['alpha'], 'Die Mitte bleibt deckend.');
+        self::assertGreaterThan(150, $centre['red']);
+    }
+
     private function removeDirectory(string $directory): void
     {
         if (!is_dir($directory)) {

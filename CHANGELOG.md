@@ -1,3 +1,30 @@
+## [1.5.0] - 2026-11-19 — WebP auch für Vorschaubilder
+
+> **Deployment:** `plugin:update` und `cache:clear`. Die Reihenfolge danach steht in der Anleitung:
+> Modul an, Massenlauf, erst dann die Auslieferung einschalten und den Cache leeren.
+
+### Hinzugefügt
+
+- **Vorschaubilder werden umgewandelt.** Galerie, Kacheln und Schieber zeigen fast nur
+  Vorschaubilder unter `/thumbnail/`; bisher bekamen nur die Originale eine WebP-Fassung. Die
+  Arbeitsliste nimmt die Vorschaubilder öffentlicher Medien zuerst, der Status zählt sie
+  getrennt.
+- **Bilder mit `srcset` kommen als WebP.** Ein Bild erhält eine WebP-Quelle mit allen Größen und
+  seinem `sizes`, sobald eine Größe eine Fassung hat. Eine Größe ohne Fassung, meist die kleinste
+  Stufe unter der Mindestgröße, behält darin ihre Originaladresse; so bleibt kein Bild leer.
+- **Vorlade-Links folgen dem Bild.** Lädt der Kopf ein PNG oder JPEG vor, das eine Fassung hat,
+  zeigt der Link auf das WebP, damit der Browser nicht beide Dateien holt.
+- **Neue Bilder werden von selbst umgewandelt.** Der Schalter „Beim Upload automatisch
+  konvertieren“ wirkt jetzt: Nach jedem Upload und jedem neu erzeugten Vorschaubild geht ein
+  Auftrag in die Warteschlange. Gelöschte Vorschaubilder nehmen ihre Fassung mit.
+
+### Behoben
+
+- **PNG mit Farbpalette** ließen sich mit GD nicht umwandeln, und Durchsichtiges wurde schwarz.
+  GD wandelt sie jetzt in Vollfarbe und schreibt den Alphakanal mit.
+- **Umwandlungsaufträge liefen sofort statt in der Warteschlange.** „`--async`“ und der
+  nächtliche Lauf warteten dadurch auf jede einzelne Umwandlung.
+
 ## [1.4.1] - 2026-09-08 — Der Name in der Erweiterungsliste und das fehlende Sinnbild
 
 ### Geändert

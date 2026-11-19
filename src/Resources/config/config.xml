@@ -251,6 +251,8 @@ default-</defaultValue>
             <name>webpAutoConvertOnUpload</name>
             <label lang="de-DE">Beim Upload automatisch konvertieren</label>
             <label lang="en-GB">Auto-convert on upload</label>
+            <helpText lang="de-DE">Wandelt neue Originale und jedes neu erzeugte Vorschaubild über die Warteschlange um.</helpText>
+            <helpText lang="en-GB">Converts new originals and every newly generated thumbnail through the message queue.</helpText>
             <defaultValue>true</defaultValue>
         </input-field>
 

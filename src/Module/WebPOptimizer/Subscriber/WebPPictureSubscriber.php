@@ -28,20 +28,25 @@ use Throwable;
  *  - Nur Storefront-Routen (`/`, `/account`, etc.) — nicht `/api/`.
  *  - Existenz-Check je Pfad im gemeinsamen Objekt-Speicher, davor ein Dienst-Cache
  *    für denselben Aufruf.
- *  - Regex matched konservativ: nur `<img>` mit `/media/...jpg|jpeg|png` ohne bestehendes
- *    `srcset`; vorhandene `<picture>`-Blöcke werden vorher ausgeblendet.
+ *  - Nur Bilder aus `/media/` und `/thumbnail/` mit JPEG/PNG; im `srcset` behält eine Größe ohne
+ *    Fassung ihre Originaladresse. Vorhandene `<picture>`-Blöcke werden vorher ausgeblendet.
+ *  - Vorlade-Links auf solche Bilder zeigen danach auf die Fassung.
  */
 final class WebPPictureSubscriber implements EventSubscriberInterface
 {
-    // Zwei Pattern-Varianten, weil Backreferences in `[^...]` von PCRE nicht aufgelöst werden.
-    // Ein einzelnes Pattern mit `([\\'"])...[^\\1...]...\\1` würde `[^\\1...]` als „nicht-1, nicht-…"
-    // interpretieren, nicht als „nicht-Match-für-Backreference-1" — subtiler Greedy-Bug.
-    // Der Abfrageteil am Ende ist nicht schmückendes Beiwerk: Shopware hängt an jede
-    // Medien-Adresse `?ts=…` an. Ein Ausdruck, der die Endung unmittelbar vor dem
-    // Anführungszeichen verlangt, greift deshalb an allem vorbei, was der Shop selbst rendert —
-    // gemessen 80 Bilder auf vier Seiten, kein einziges umgeschrieben.
-    private const URL_REGEX_DOUBLE_QUOTE = '~<img\\b(?![^>]*\\bsrcset=)[^>]*\\bsrc="((?:https?://[^"\\s]+)?/media/[^"\\s]+\\.(?:jpe?g|png)(?:[?#][^"\\s]*)?)"[^>]*>~i';
-    private const URL_REGEX_SINGLE_QUOTE = "~<img\\b(?![^>]*\\bsrcset=)[^>]*\\bsrc='((?:https?://[^'\\s]+)?/media/[^'\\s]+\\.(?:jpe?g|png)(?:[?#][^'\\s]*)?)'[^>]*>~i";
+    /**
+     * Ein Bild-Tag als Ganzes; die Attribute liest `attribute()` einzeln. Ein einziger Ausdruck
+     * für Tag, Adresse und Endung griff an allem vorbei, was ein `srcset` trägt, und das sind
+     * Galerie, Kacheln und Schieber.
+     */
+    private const IMG_TAG_REGEX = '~<img\b[^>]*>~i';
+
+    private const LINK_TAG_REGEX = '~<link\b[^>]*>~i';
+
+    /** Ablageorte des öffentlichen Dateisystems, deren Bilder eine Fassung haben können. */
+    private const PUBLIC_ROOTS = ['/media/', '/thumbnail/'];
+
+    private const CONVERTIBLE_EXTENSIONS = ['jpeg', 'jpg', 'png'];
 
     /** Response-Size-Cap — skip Subscriber bei sehr großen HTMLs (3 MB Default). */
     private const MAX_RESPONSE_BYTES = 3 * 1024 * 1024;
@@ -155,38 +160,171 @@ final class WebPPictureSubscriber implements EventSubscriberInterface
         );
 
         $body = $this->rewriteFreeImgTags($body);
+        $body = $this->rewritePreloadLinks($body);
 
         return $vorhandene === [] ? $body : strtr($body, $vorhandene);
     }
 
     private function rewriteFreeImgTags(string $body): string
     {
-        $callback = function (array $matches): string {
-            /** @var array{0: string, 1: string} $matches */
-            $imgTag = $matches[0];
-            $url = $matches[1];
+        return (string) preg_replace_callback(
+            self::IMG_TAG_REGEX,
+            fn (array $treffer): string => $this->rewriteImgTag($treffer[0]),
+            $body,
+        );
+    }
 
-            $relativePath = $this->urlToFilesystemPath($url);
-            if ($relativePath === null) {
+    /**
+     * Setzt ein Bild in ein `<picture>` mit WebP-Quelle, sobald eine seiner Dateien eine Fassung hat.
+     *
+     * Eine Größe ohne Fassung behält in der Quelle ihre Originaladresse. Der Browser wählt aus der
+     * Quelle frei; zeigte sie auf eine fehlende Datei, bliebe das Bild leer. Mit der Originaladresse
+     * lädt er das PNG und zeigt es, denn das Format liest er aus der Datei, nicht aus `type`. Das
+     * betrifft vor allem die kleinste Stufe, die oft unter der Mindestgröße bleibt und nie eine
+     * Fassung bekommt. Die Quelle übernimmt `sizes`, sonst rechnete der Browser mit voller
+     * Bildschirmbreite und lüde eine größere Datei als vorher.
+     *
+     * Die Werte stammen aus gerendertem HTML und sind schon maskiert; sie werden unverändert
+     * übernommen, ein zweites Maskieren machte aus `&amp;` ein `&amp;amp;`.
+     */
+    private function rewriteImgTag(string $imgTag): string
+    {
+        $srcset = self::attribute($imgTag, 'srcset');
+        if ($srcset !== null) {
+            $webpSrcset = $this->webpSrcset($srcset);
+            if ($webpSrcset === null) {
                 return $imgTag;
             }
+            $sizes = self::attribute($imgTag, 'sizes');
 
-            if (!$this->hasWebpVariant($relativePath)) {
-                return $imgTag;
-            }
-
-            // $url ist bereits HTML-escaped (kommt aus gerendertem Twig).
-            // Nicht erneut htmlspecialchars, sonst Double-Encoding (&amp; → &amp;amp;).
-            $webpUrl = WebPUrl::variantOf($url);
             return '<picture>'
-                . '<source srcset="' . $webpUrl . '" type="image/webp">'
+                . '<source type="image/webp" srcset="' . $webpSrcset . '"'
+                . ($sizes !== null ? ' sizes="' . $sizes . '"' : '')
+                . '>'
                 . $imgTag
                 . '</picture>';
-        };
+        }
 
-        $body = (string) preg_replace_callback(self::URL_REGEX_DOUBLE_QUOTE, $callback, $body);
-        $body = (string) preg_replace_callback(self::URL_REGEX_SINGLE_QUOTE, $callback, $body);
-        return $body;
+        $src = self::attribute($imgTag, 'src');
+        if ($src === null) {
+            return $imgTag;
+        }
+        $webpUrl = $this->webpUrl($src);
+        if ($webpUrl === null) {
+            return $imgTag;
+        }
+
+        return '<picture>'
+            . '<source srcset="' . $webpUrl . '" type="image/webp">'
+            . $imgTag
+            . '</picture>';
+    }
+
+    /**
+     * Stellt das Vorladen eines Bildes auf seine WebP-Fassung um.
+     *
+     * Lädt der Kopf das PNG vor und wählt das Bild danach die WebP-Quelle, holt der Browser beide
+     * Dateien, und das Vorladen verzögert genau das Bild, das es beschleunigen sollte. Ein Link
+     * mit eigenem `type` bleibt, wie er ist; er hat seine Wahl schon getroffen.
+     */
+    private function rewritePreloadLinks(string $body): string
+    {
+        return (string) preg_replace_callback(
+            self::LINK_TAG_REGEX,
+            function (array $treffer): string {
+                $linkTag = $treffer[0];
+                $rel = preg_split('~\s+~', strtolower((string) self::attribute($linkTag, 'rel'))) ?: [];
+                if (!in_array('preload', $rel, true)
+                    || strtolower((string) self::attribute($linkTag, 'as')) !== 'image'
+                    || self::attribute($linkTag, 'type') !== null
+                ) {
+                    return $linkTag;
+                }
+
+                $href = self::attribute($linkTag, 'href');
+                $imageSrcset = self::attribute($linkTag, 'imagesrcset');
+                if ($href === null && $imageSrcset === null) {
+                    return $linkTag;
+                }
+
+                $webpHref = $href !== null ? $this->webpUrl($href) : null;
+                $webpSrcset = $imageSrcset !== null ? $this->webpSrcset($imageSrcset) : null;
+                if (($href !== null && $webpHref === null) || ($imageSrcset !== null && $webpSrcset === null)) {
+                    return $linkTag;
+                }
+
+                if ($webpHref !== null) {
+                    $linkTag = self::replaceAttribute($linkTag, 'href', $webpHref);
+                }
+                if ($webpSrcset !== null) {
+                    $linkTag = self::replaceAttribute($linkTag, 'imagesrcset', $webpSrcset);
+                }
+
+                return (string) preg_replace('~\s*/?>$~', ' type="image/webp">', $linkTag, 1);
+            },
+            $body,
+        );
+    }
+
+    /**
+     * Das `srcset` mit den WebP-Fassungen, wo es sie gibt, sonst mit der Originaladresse. Null,
+     * wenn keine einzige Größe eine Fassung hat; dann ändert sich nichts.
+     */
+    private function webpSrcset(string $srcset): ?string
+    {
+        $candidates = preg_split('~,\s+~', trim($srcset)) ?: [];
+        if ($candidates === [] || $candidates === ['']) {
+            return null;
+        }
+
+        $webpCandidates = [];
+        $converted = 0;
+        foreach ($candidates as $candidate) {
+            if (preg_match('~^(\S+)(\s+\S.*)?$~s', trim($candidate), $teile) !== 1) {
+                return null;
+            }
+            $webpUrl = $this->webpUrl($teile[1]);
+            if ($webpUrl !== null) {
+                ++$converted;
+            }
+            $webpCandidates[] = ($webpUrl ?? $teile[1]) . ($teile[2] ?? '');
+        }
+
+        return $converted === 0 ? null : implode(', ', $webpCandidates);
+    }
+
+    /**
+     * Die Adresse der WebP-Fassung, oder null, wenn das Bild keine hat oder keine haben kann.
+     */
+    private function webpUrl(string $url): ?string
+    {
+        $relativePath = $this->urlToFilesystemPath($url);
+        if ($relativePath === null || !$this->hasWebpVariant($relativePath)) {
+            return null;
+        }
+
+        return WebPUrl::variantOf($url);
+    }
+
+    /**
+     * Liest ein Attribut. `data-src` und `data-srcset` zählen nicht: Davor steht ein Bindestrich,
+     * und genau dort sähe eine Wortgrenze einen Anfang.
+     */
+    private static function attribute(string $tag, string $name): ?string
+    {
+        $muster = '~(?<![\w-])' . preg_quote($name, '~') . '\s*=\s*(?:"([^"]*)"|\'([^\']*)\')~i';
+        if (preg_match($muster, $tag, $treffer) !== 1) {
+            return null;
+        }
+
+        return isset($treffer[2]) ? $treffer[2] : $treffer[1];
+    }
+
+    private static function replaceAttribute(string $tag, string $name, string $value): string
+    {
+        $muster = '~(?<![\w-])' . preg_quote($name, '~') . '\s*=\s*(?:"[^"]*"|\'[^\']*\')~i';
+
+        return (string) preg_replace_callback($muster, static fn (): string => $name . '="' . $value . '"', $tag, 1);
     }
 
     /**
@@ -215,14 +353,25 @@ final class WebPPictureSubscriber implements EventSubscriberInterface
         }
         $rawPath = isset($parsed['path']) ? (string) $parsed['path'] : $url;
 
-        $mediaPos = strpos($rawPath, '/media/');
-        if ($mediaPos === false) {
+        $rootPos = null;
+        foreach (self::PUBLIC_ROOTS as $root) {
+            $pos = strpos($rawPath, $root);
+            if ($pos !== false && ($rootPos === null || $pos < $rootPos)) {
+                $rootPos = $pos;
+            }
+        }
+        if ($rootPos === null) {
             return null;
         }
-        $relative = ltrim(substr($rawPath, $mediaPos), '/');
+        $relative = ltrim(substr($rawPath, $rootPos), '/');
         if (str_contains($relative, '..')) {
             return null;
         }
+        $extension = strtolower((string) pathinfo($relative, \PATHINFO_EXTENSION));
+        if (!in_array($extension, self::CONVERTIBLE_EXTENSIONS, true)) {
+            return null;
+        }
+
         return $relative;
     }
 

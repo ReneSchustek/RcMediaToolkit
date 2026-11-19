@@ -46,16 +46,22 @@ final class GdEncoder implements WebPEncoderInterface
         }
         unset($sourceFormat);
 
-        ob_start();
-        try {
-            $success = imagewebp($image, null, max(0, min(100, $quality)));
-            if ($success === false) {
-                throw new RuntimeException('GD-WebP-Encoding fehlgeschlagen');
-            }
-            $bytes = ob_get_clean();
-            return $bytes === false ? '' : $bytes;
-        } finally {
-            imagedestroy($image);
+        // WebP kennt keine Farbpalette: `imagewebp()` lehnt ein Palettenbild ab. Viele PNG-
+        // Zeichnungen und Maßbilder sind genau so gespeichert. Die Transparenz bleibt nur
+        // erhalten, wenn GD den Alphakanal mitschreibt, statt ihn auf Schwarz zu mischen.
+        if (!imageistruecolor($image)) {
+            imagepalettetotruecolor($image);
         }
+        imagealphablending($image, false);
+        imagesavealpha($image, true);
+
+        ob_start();
+        $success = imagewebp($image, null, max(0, min(100, $quality)));
+        $bytes = ob_get_clean();
+        if ($success === false) {
+            throw new RuntimeException('GD-WebP-Encoding fehlgeschlagen');
+        }
+
+        return $bytes === false ? '' : $bytes;
     }
 }
