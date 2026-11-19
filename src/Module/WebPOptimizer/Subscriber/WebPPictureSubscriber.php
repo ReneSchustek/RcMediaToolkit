@@ -363,8 +363,11 @@ final class WebPPictureSubscriber implements EventSubscriberInterface
         if ($rootPos === null) {
             return null;
         }
-        $relative = ltrim(substr($rawPath, $rootPos), '/');
-        if (str_contains($relative, '..')) {
+        // In der Adresse stehen Leerzeichen und Umlaute kodiert (`%20`, `%C3%A4`), auf der Platte
+        // im Klartext. Ohne Dekodieren fände sich zu keinem solchen Bild eine Fassung. Die Prüfung
+        // auf `..` und Nullbytes folgt danach, damit `%2e%2e` oder `%00` nicht an ihr vorbeikommen.
+        $relative = rawurldecode(ltrim(substr($rawPath, $rootPos), '/'));
+        if (str_contains($relative, '..') || str_contains($relative, "\x00")) {
             return null;
         }
         $extension = strtolower((string) pathinfo($relative, \PATHINFO_EXTENSION));

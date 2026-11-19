@@ -1,3 +1,12 @@
+## [1.5.1] - 2026-11-19 — Bilder mit Leerzeichen oder Umlauten im Namen
+
+### Behoben
+
+- **Bilder mit Leerzeichen oder Umlauten im Dateinamen kamen nie als WebP.** Shopware schreibt sie
+  in der Adresse kodiert (`%20`, `%C3%A4`), auf der Platte stehen sie im Klartext. Die Suche nach
+  der Fassung lief deshalb ins Leere. Der Pfad wird jetzt vor der Suche dekodiert; die Prüfung
+  auf `..` und Nullbytes folgt danach.
+
 ## [1.5.0] - 2026-11-19 — WebP auch für Vorschaubilder
 
 > **Deployment:** `plugin:update` und `cache:clear`. Die Reihenfolge danach steht in der Anleitung:

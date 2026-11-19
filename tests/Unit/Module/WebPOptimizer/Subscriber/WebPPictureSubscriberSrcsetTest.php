@@ -110,6 +110,39 @@ final class WebPPictureSubscriberSrcsetTest extends TestCase
     }
 
     /**
+     * Was: Leerzeichen und Umlaute im Dateinamen.
+     * Warum: Shopware schreibt sie in der Adresse kodiert, `GBS-5%20-%20GBS-6`, die Datei heißt aber
+     *        `GBS-5 - GBS-6`. Ohne Dekodieren fände sich zu keinem solchen Bild eine Fassung; im Shop
+     *        trägt ein großer Teil der Bilder solche Namen. Die Adresse der Fassung bleibt kodiert.
+     */
+    #[Test]
+    public function encodedFileNamesFindTheirWebp(): void
+    {
+        $img = '<img src="/media/a/Gel%C3%A4nder.png" srcset="/thumbnail/a/GBS-5%20-%20GBS-6_330x330.jpg?ts=1 330w" alt="">';
+        $result = $this->rewrite(['thumbnail/a/GBS-5 - GBS-6_330x330.jpg.webp' => true], $img);
+
+        self::assertStringContainsString('srcset="/thumbnail/a/GBS-5%20-%20GBS-6_330x330.jpg.webp?ts=1 330w"', $result);
+        self::assertStringContainsString(
+            '<source srcset="/media/a/Gel%C3%A4nder.png.webp" type="image/webp">',
+            $this->rewrite(['media/a/Geländer.png.webp' => true], '<img src="/media/a/Gel%C3%A4nder.png" alt="">'),
+        );
+    }
+
+    /**
+     * Was: Ein kodierter Weg aus dem Medienordner heraus.
+     * Warum: Erst das Dekodieren macht aus `%2e%2e` ein `..`; geprüft wird deshalb danach.
+     */
+    #[Test]
+    public function encodedTraversalIsRejected(): void
+    {
+        $filesystem = new FakeFilesystem(['media/../config/x.png.webp' => true]);
+        $body = '<img src="/media/%2e%2e/config/x.png" alt=""><img src="/media/a%00b.png" alt="">';
+
+        self::assertSame($body, $this->rewriteWith($filesystem, $body));
+        self::assertSame(0, $filesystem->existsCalls);
+    }
+
+    /**
      * Was: `data-src` und `data-srcset` stehen vor den echten Attributen.
      * Warum: Vor `src` in `data-src` sieht eine Wortgrenze einen Anfang. Wer dort liest, baut die
      *        Quelle aus einer Adresse, die ein Skript erst später setzt, oder gar nicht.
